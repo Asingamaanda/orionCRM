@@ -1,17 +1,10 @@
-import SectionCard from "../components/SectionCard";
+"use client";
+import { useEffect, useState } from "react";
+import { apiGet } from "../../lib/api";
 
 export default function ExecutivePage() {
-  return (
-    <main className="mx-auto max-w-7xl space-y-6 p-6">
-      <h1 className="text-3xl font-bold">Executive Overview</h1>
-      <section className="grid gap-4 md:grid-cols-3">
-        <SectionCard title="Operational Health Score">91.4</SectionCard>
-        <SectionCard title="Campaign Performance">+18.2%</SectionCard>
-        <SectionCard title="Lead Conversion">24.8%</SectionCard>
-        <SectionCard title="Engineering Velocity">32 tasks/sprint</SectionCard>
-        <SectionCard title="SEO Visibility Trend">+12.6%</SectionCard>
-        <SectionCard title="Staff Workload">74% utilized</SectionCard>
-      </section>
-    </main>
-  );
+  const [data, setData] = useState<any>();
+  useEffect(() => { apiGet<any>("/executive/overview").then(setData).catch(console.error); }, []);
+  if (!data) return <main className="p-6">Loading executive overview...</main>;
+  return <main className="mx-auto max-w-7xl p-6"><h1 className="text-3xl font-bold mb-4">Executive Overview</h1><div className="grid gap-3 md:grid-cols-3">{Object.entries(data).filter(([k])=>k!=="id").map(([k,v]) => <div key={k} className="rounded-xl bg-soft p-3"><p className="text-xs text-slate-400">{k}</p><p>{String(v)}</p></div>)}</div></main>;
 }

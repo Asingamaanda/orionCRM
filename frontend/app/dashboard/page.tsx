@@ -1,98 +1,28 @@
 "use client";
-
-import { useMemo, useState } from "react";
-import SectionCard from "../components/SectionCard";
-import { Kpi, Lead, Note, Task } from "../../lib/types";
-
-const tasks: Task[] = [
-  { id: 1, title: "Review intake forms", priority: "High", status: "In Progress", assigned_to: "Alex", due_date: "2026-05-18" },
-  { id: 2, title: "Finalize retainer template", priority: "Medium", status: "Todo", assigned_to: "Jamie", due_date: "2026-05-20" }
-];
-const leads: Lead[] = [
-  { id: 1, client_name: "Mercury Holdings", source: "Referral", lead_stage: "Consult Scheduled", conversion_probability: 74, last_contacted: "2026-05-12" },
-  { id: 2, client_name: "Evergreen Logistics", source: "Website", lead_stage: "Discovery", conversion_probability: 42, last_contacted: "2026-05-10" }
-];
-const notesSeed: Note[] = [
-  { id: 1, content: "Client asked about M&A due diligence timeline.", category: "Client", created_at: "2026-05-11 10:22" },
-  { id: 2, content: "Need playbook for intake SLAs before June.", category: "Ops", created_at: "2026-05-13 14:09" }
-];
-const kpis: Kpi = { active_leads: 19, pending_tasks: 7, consultations_booked: 12, completed_tasks: 38 };
+import { useEffect, useState } from "react";
+import { apiGet } from "../../lib/api";
+import LoadingCard from "../components/LoadingCard";
 
 export default function DashboardPage() {
-  const [query, setQuery] = useState("");
-  const filteredNotes = useMemo(
-    () => notesSeed.filter((n) => `${n.content} ${n.category}`.toLowerCase().includes(query.toLowerCase())),
-    [query]
-  );
+  const [kpis, setKpis] = useState<any>();
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [notes, setNotes] = useState<any[]>([]);
+  const [timeline, setTimeline] = useState<any[]>([]);
 
-  return (
-    <main className="mx-auto max-w-7xl p-6">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Orion Law Operations</h1>
-          <p className="text-slate-400">Dark-mode legal-tech dashboard for internal teams.</p>
-        </div>
-      </header>
+  useEffect(() => {
+    apiGet<any>("/kpis").then(setKpis).catch(console.error);
+    apiGet<any[]>("/tasks").then(setTasks).catch(console.error);
+    apiGet<any[]>("/notifications").then(setNotes).catch(console.error);
+    apiGet<any[]>("/timeline").then(setTimeline).catch(console.error);
+  }, []);
 
-      <section className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Object.entries(kpis).map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-slate-700/40 bg-soft p-4">
-            <p className="text-sm uppercase tracking-wide text-slate-400">{label.replace("_", " ")}</p>
-            <p className="mt-2 text-2xl font-semibold">{value}</p>
-          </div>
-        ))}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <SectionCard title="Tasks">
-          <div className="space-y-3 text-sm">
-            {tasks.map((t) => (
-              <div key={t.id} className="rounded-lg border border-slate-700/30 bg-soft/60 p-3">
-                <p className="font-medium">{t.title}</p>
-                <p className="text-slate-400">{t.priority} • {t.status} • {t.assigned_to} • Due {t.due_date}</p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Lead Pipeline">
-          <div className="space-y-3 text-sm">
-            {leads.map((l) => (
-              <div key={l.id} className="rounded-lg border border-slate-700/30 bg-soft/60 p-3">
-                <p className="font-medium">{l.client_name}</p>
-                <p className="text-slate-400">{l.source} • {l.lead_stage} • {l.conversion_probability}% • {l.last_contacted}</p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Notes">
-          <input
-            className="mb-3 w-full rounded-lg border border-slate-700 bg-bg px-3 py-2 text-sm"
-            placeholder="Search notes..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <div className="space-y-2 text-sm">
-            {filteredNotes.map((n) => (
-              <div key={n.id} className="rounded-lg border border-slate-700/30 bg-soft/60 p-3">
-                <p>{n.content}</p>
-                <p className="mt-1 text-xs text-slate-400">{n.category} • {n.created_at}</p>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
-
-        <SectionCard title="AI Actions Panel">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {["Generate LinkedIn Post", "Generate Weekly Report", "Summarize Meeting", "Analyze Lead Pipeline"].map((action) => (
-              <button key={action} className="rounded-lg bg-accent px-4 py-3 text-sm font-medium text-white transition hover:brightness-110">
-                {action}
-              </button>
-            ))}
-          </div>
-        </SectionCard>
-      </div>
-    </main>
-  );
+  return <main className="mx-auto max-w-7xl p-6 space-y-4">
+    <h1 className="text-3xl font-bold">Operations Dashboard</h1>
+    {!kpis ? <LoadingCard /> : <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{Object.entries(kpis).map(([k,v]) => <div key={k} className="rounded-xl bg-soft p-3"><p className="text-xs text-slate-400">{k}</p><p className="text-2xl">{String(v)}</p></div>)}</div>}
+    <section className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-xl bg-panel p-4"><h2 className="mb-2 font-semibold">Tasks</h2>{tasks.map(t => <p key={t.id} className="text-sm text-slate-300">{t.title} • {t.status} • {t.priority}</p>)}</div>
+      <div className="rounded-xl bg-panel p-4"><h2 className="mb-2 font-semibold">Notifications</h2>{notes.map(n => <p key={n.id} className="text-sm text-slate-300">{n.title}</p>)}</div>
+    </section>
+    <div className="rounded-xl bg-panel p-4"><h2 className="mb-2 font-semibold">Operational Timeline</h2>{timeline.map(e => <p key={e.id} className="text-sm text-slate-300">{e.event_type}: {e.summary}</p>)}</div>
+  </main>;
 }

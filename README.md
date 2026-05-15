@@ -1,38 +1,47 @@
-# Orion Deployable Operational Workflow Platform
+# Orion Interactive Development Platform
 
-## Quick fix for import/bootstrap errors
-If you see an `importlib._bootstrap` stack trace when starting API, install backend dependencies first.
-Most common cause in this repo is missing PostgreSQL driver (`psycopg`) when `DATABASE_URL` points to Postgres.
+## Development mode auth bypass
+When `APP_ENV=development`, backend injects mock user and bypasses JWT + RBAC checks:
+```json
+{"id":1,"email":"dev@orion.local","role":"executive"}
+```
+Production auth/JWT flow remains intact.
 
+## API architecture
+- Central routes in `backend/app/api/routes.py`
+- DB + env abstraction in `backend/app/database.py` and `backend/app/core/config.py`
+- Auth/JWT retained in `backend/app/core/security.py`
+
+## Frontend/backend flow
+- Frontend uses reusable API client: `frontend/lib/api.ts`
+- API base URL from `NEXT_PUBLIC_API_URL`
+- Wired live views: KPIs, tasks, notifications, timeline, SEO metrics, executive overview, intelligence modules.
+
+## Operational workflow lifecycle
+- Task workflow: status updates + timeline events
+- Lead pipeline stages and conversion scoring
+- Content ops publishing and campaign tracking
+- SEO lifecycle with schema/meta/optimization statuses
+- Executive AI summary metrics
+
+## Local setup
 ```bash
 cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-Then run:
-```bash
+python -m app.seed
 uvicorn app.main:app --reload
 ```
 
-## Role & Access Control
-Roles: Admin, Operations, Marketing, Legal Staff, SEO, Executive.
-RBAC map is implemented in `backend/app/core/rbac.py` and used by protected API routes.
-
-## Authentication & Sessions
-- Login endpoint: `POST /api/auth/login`
-- Session persistence: `session_tokens`
-- Audit logging: `audit_logs`
-- JWT architecture prep in `backend/app/core/security.py` + env-driven secrets.
-
-## Database + Migration Readiness
-- DB abstraction via `DATABASE_URL` in `backend/app/core/config.py` and `backend/app/database.py`.
-- SQLite dev default + PostgreSQL production-ready connection.
-- Alembic scaffold: `backend/alembic.ini`, `backend/alembic/versions/0001_initial.py`.
-
-## Deployment
-### Docker
 ```bash
-docker compose up --build
+cd frontend
+cp .env.local.example .env.local
+npm install
+npm run dev
 ```
+
+## Dev experience
+- Health endpoint: `/api/health`
+- Connectivity check visible on home page
+- Rich seed dataset in `backend/app/seed.py`

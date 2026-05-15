@@ -35,61 +35,67 @@ class WorkflowTask(Base):
     __tablename__ = "workflow_tasks"
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
-    template_name = Column(String, nullable=True)
-    recurring_rule = Column(String, nullable=True)
-    approval_status = Column(String, default="pending")
-    escalation_rule = Column(String, nullable=True)
-    dependency_task_id = Column(Integer, nullable=True)
+    priority = Column(String, default="Medium")
     status = Column(String, default="todo")
+    recurring_rule = Column(String, nullable=True)
+    due_at = Column(String, nullable=True)
+    template_name = Column(String, nullable=True)
 
 
-class WhatsappWorkflow(Base):
-    __tablename__ = "whatsapp_workflows"
+class LeadPipeline(Base):
+    __tablename__ = "lead_pipeline"
     id = Column(Integer, primary_key=True)
-    lead_name = Column(String, nullable=False)
-    assigned_to = Column(String, nullable=False)
-    followup_stage = Column(String, nullable=False)
-    consultation_slot = Column(String, nullable=True)
-    response_status = Column(String, nullable=False)
+    client_name = Column(String, nullable=False)
+    stage = Column(String, nullable=False)
+    conversion_score = Column(Float, nullable=False)
+    source = Column(String, nullable=False)
+    interaction_history = Column(Text, nullable=False)
 
 
 class ContentWorkflow(Base):
     __tablename__ = "content_workflows"
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
-    approval_stage = Column(String, nullable=False)
+    platform = Column(String, nullable=False)
+    campaign = Column(String, nullable=False)
     publishing_status = Column(String, nullable=False)
-    campaign_owner = Column(String, nullable=False)
-    scheduled_publish_at = Column(String, nullable=True)
-    media_asset_status = Column(String, nullable=False)
+    performance = Column(Float, nullable=False)
 
 
 class SeoExecutionWorkflow(Base):
     __tablename__ = "seo_execution_workflows"
     id = Column(Integer, primary_key=True)
     seo_task = Column(String, nullable=False)
-    assigned_to = Column(String, nullable=False)
     verification_status = Column(String, nullable=False)
-    issue_lifecycle = Column(String, nullable=False)
-    engineering_deployment_status = Column(String, nullable=False)
+    schema_status = Column(String, nullable=False)
+    metadata_audit = Column(String, nullable=False)
+    optimization_score = Column(Float, nullable=False)
+    engineering_status = Column(String, nullable=False)
 
 
-class SystemHealth(Base):
-    __tablename__ = "system_health"
+class Notification(Base):
+    __tablename__ = "notifications"
     id = Column(Integer, primary_key=True)
-    api_status = Column(String, nullable=False)
-    failed_tasks = Column(Integer, default=0)
-    notification_delivery_failures = Column(Integer, default=0)
-    background_jobs_running = Column(Integer, default=0)
-    checked_at = Column(DateTime(timezone=True), server_default=func.now())
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class ActivityEvent(Base):
+    __tablename__ = "activity_events"
+    id = Column(Integer, primary_key=True)
+    event_type = Column(String, nullable=False)
+    summary = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class ExecutiveMetric(Base):
     __tablename__ = "executive_metrics"
     id = Column(Integer, primary_key=True)
     operational_health_score = Column(Float, nullable=False)
-    campaign_performance = Column(Float, nullable=False)
     lead_conversion = Column(Float, nullable=False)
-    engineering_velocity = Column(Float, nullable=False)
     seo_visibility_trend = Column(Float, nullable=False)
+    campaign_performance = Column(Float, nullable=False)
+    engineering_velocity = Column(Float, nullable=False)
     staff_workload = Column(Float, nullable=False)
+    ai_summary = Column(Text, nullable=False)
